@@ -1,79 +1,78 @@
 // ============================================================
-// pkg.svh - ²ÎÊı°ü
-// ËùÓĞ¿ÉÅäÖÃ²ÎÊı¼¯ÖĞÓÚ´Ë£¬½ûÖ¹Ó²±àÂë
+// pkg.svh - å‚æ•°åŒ…
+// æ‰€æœ‰å¯é…ç½®å‚æ•°é›†ä¸­äºæ­¤ï¼Œç¦æ­¢ç¡¬ç¼–ç 
 // ============================================================
 `ifndef __PKG_SVH__
 `define __PKG_SVH__
 package pkg;
 
-    // -------- ĞÅºÅÊä³ö²ÎÊı --------
-    parameter int OUT_WIDTH = 16;           // IQ Êä³öÎ»¿í
-    parameter int NPAR = 8;                // ²¢ĞĞÍ¨µÀÊı
+    // -------- ä¿¡å·è¾“å‡ºå‚æ•° --------
+    parameter int OUT_WIDTH = 16;           // IQ è¾“å‡ºä½å®½
+    parameter int NPAR = 8;                // å¹¶è¡Œé€šé“æ•°
 
-    // -------- ÏàÎ»/É¨Æµ²ÎÊı --------
-    parameter int PHASE_WIDTH = 30;         // ÏàÎ»×ÜÎ»¿í (Q1.29)
-    parameter int SWP_WIDTH = 30;           // É¨Æµ²ÎÊıÎ»¿í
+    // -------- ç›¸ä½/æ‰«é¢‘å‚æ•° --------
+    parameter int PHASE_WIDTH = 30;         // ç›¸ä½æ€»ä½å®½ (Q1.29)
+    parameter int SWP_WIDTH = 30;           // æ‰«é¢‘å‚æ•°ä½å®½
 
-    // -------- Âö¿í²ÎÊı --------
-    parameter int PWWIDTH = 24;             // Âö¿í/ÂëÔª¿í¶ÈÎ»¿í
-    parameter int LIMIT_WIDTH = PWWIDTH;    // Âö¿í¼ÆÊıÆ÷Î»¿í (Í¬ PWWIDTH)
+    // -------- è„‰å®½å‚æ•° --------
+    parameter int PWWIDTH = 24;             // è„‰å®½/ç å…ƒå®½åº¦ä½å®½
+    parameter int LIMIT_WIDTH = PWWIDTH;    // è„‰å®½è®¡æ•°å™¨ä½å®½ (åŒ PWWIDTH)
 
-    // -------- Õ­Âö³å²ÎÊı --------
-    // Õ­Âö³å¿ØÖÆ¼Ä´æÆ÷£¨NARROW_REG_W Î»£©£º
-    //   ×î¸ßÎ» NARROW_REG_W-1 = Õ­Âö³åÄ£Ê½Ê¹ÄÜ£¨1=Õ­Âö³å, 0=·ÇÕ­Âö³å£©
-    //   ÆäÓàÎ» [NARROW_REG_W-2:0] = Òª·¢³öµÄ²ÉÑùµãÊı£¨Ã¿Ê±ÖÓÊä³ö NPAR ¸ö IQ Ñù±¾¶Ô£©
-    parameter int NARROW_REG_W = 32;       // Õ­Âö³å¿ØÖÆ¼Ä´æÆ÷Î»¿í
+    // -------- è„‰å®½ç²¾åº¦å‚æ•° --------
+    // è„‰å®½ mod_param.pw ç°ç›´æ¥ä»¥"é‡‡æ ·ç‚¹æ•°(IQ å¤æ•°æ ·æœ¬å¯¹æ•°)"ä¸ºå•ä½(åŸä¸ºæ•´æ‹)ã€‚
+    // æ¯æ—¶é’Ÿæœ€å¤šè¾“å‡º NPAR=8 ä¸ªæ ·æœ¬å¯¹; pw é 8 æ•´æ•°å€æ—¶æœ€åä¸€æ‹éƒ¨åˆ†é€šé“æˆªæ–­ã€‚
+    // å·²ä¸å†éœ€è¦ç‹¬ç«‹çš„çª„è„‰å†²æ¨¡å¼å¼€å…³ (NARROW_REG_W å‚æ•°åŠ narrow_reg ç«¯å£å·²ç§»é™¤)ã€‚
 
-    // -------- IQ ºÏ³ÉÄ£¿é²ÎÊı --------
-    parameter int COSSIN_IN_WIDTH = 18;    // IQ ºÏ³ÉÄ£¿éÊäÈëÎ»¿í
-    parameter int COSSIN_OUT_WIDTH = 18;   // IQ ºÏ³ÉÄ£¿éÊä³öÎ»¿í
+    // -------- IQ åˆæˆæ¨¡å—å‚æ•° --------
+    parameter int COSSIN_IN_WIDTH = 18;    // IQ åˆæˆæ¨¡å—è¾“å…¥ä½å®½
+    parameter int COSSIN_OUT_WIDTH = 18;   // IQ åˆæˆæ¨¡å—è¾“å‡ºä½å®½
 
-    // -------- NLFM ²ÎÊı --------
-    parameter int NLFM_IN_WIDTH = 12;      // NLFM ÏàÎ»-²½½ø×ª»»ÊäÈëÎ»¿í
-    parameter int NLFM_OUT_WIDTH = 12;     // NLFM ÏàÎ»-²½½ø×ª»»Êä³öÎ»¿í
-    parameter int NLFM_DELAY = 6;          // NLFM ÏàÎ»-²½½ø×ª»»ÑÓ³Ù
+    // -------- NLFM å‚æ•° --------
+    parameter int NLFM_IN_WIDTH = 12;      // NLFM ç›¸ä½-æ­¥è¿›è½¬æ¢è¾“å…¥ä½å®½
+    parameter int NLFM_OUT_WIDTH = 12;     // NLFM ç›¸ä½-æ­¥è¿›è½¬æ¢è¾“å‡ºä½å®½
+    parameter int NLFM_DELAY = 6;          // NLFM ç›¸ä½-æ­¥è¿›è½¬æ¢å»¶è¿Ÿ
 
-    // -------- ³Ë·¨Æ÷²ÎÊı --------
-    parameter int MULT_DELAY = 3;          // ³Ë·¨Æ÷Á÷Ë®ÏßÑÓ³Ù
+    // -------- ä¹˜æ³•å™¨å‚æ•° --------
+    parameter int MULT_DELAY = 3;          // ä¹˜æ³•å™¨æµæ°´çº¿å»¶è¿Ÿ
 
-    // -------- Ä£¿é¼¶Á÷Ë®ÏßÑÓ³Ù --------
-    // nlcmd ÄÚ²¿ÑÓ³ÙÁ´:
-    //   state=LOAD ¡ú sweep_phase ¸³³õÖµ(1 clk)
-    //   state=RUN  ¡ú sweep_phase ÀÛ¼Ó ¡ú ½Ø¶Ï ¡ú cossin_nlfm/atan_cal(NLFM_DELAY=6)
-    //   ¡ú Ñ¡Í¨(1) ¡ú func_dly(2) ¡ú ³Ë·¨Æ÷(MULT_DELAY=3) ¡ú mult_trunc(1) ¡ú ×îÖÕ¼Ó·¨(1)
+    // -------- æ¨¡å—çº§æµæ°´çº¿å»¶è¿Ÿ --------
+    // nlcmd å†…éƒ¨å»¶è¿Ÿé“¾:
+    //   state=LOAD â†’ sweep_phase èµ‹åˆå€¼(1 clk)
+    //   state=RUN  â†’ sweep_phase ç´¯åŠ  â†’ æˆªæ–­ â†’ cossin_nlfm/atan_cal(NLFM_DELAY=6)
+    //   â†’ é€‰é€š(1) â†’ func_dly(2) â†’ ä¹˜æ³•å™¨(MULT_DELAY=3) â†’ mult_trunc(1) â†’ æœ€ç»ˆåŠ æ³•(1)
     //   NLCMD_TOTAL_DELAY = NLFM_DELAY(6) + 1 + 2 + MULT_DELAY(3) + 1 + 1 = 14
-    parameter int NLCMD_TOTAL_DELAY = 14;  // nlcmd ×ÜÑÓ³Ù (state=RUN¡úphasestep_out)
+    parameter int NLCMD_TOTAL_DELAY = 14;  // nlcmd æ€»å»¶è¿Ÿ (state=RUNâ†’phasestep_out)
 
-    // phase_ctrl ÄÚ²¿ÑÓ³Ù:
-    //   state(ÊäÈë) ¡ú pselÑ¡Í¨(1) ¡ú phase_acc_0ÀÛ¼Ó(1) ¡ú psel_mul¼ÆËã(1) ¡ú phase_acc¼Ó·¨(1) ¡ú phase_out¼Ä´æ(1)
-    parameter int PHASE_CTRL_DELAY = 5;   // phase_ctrl ÏàÎ»Êä³öÑÓ³Ù (state¡úphase_out)
+    // phase_ctrl å†…éƒ¨å»¶è¿Ÿ:
+    //   state(è¾“å…¥) â†’ pselé€‰é€š(1) â†’ phase_acc_0ç´¯åŠ (1) â†’ psel_mulè®¡ç®—(1) â†’ phase_accåŠ æ³•(1) â†’ phase_outå¯„å­˜(1)
+    parameter int PHASE_CTRL_DELAY = 5;   // phase_ctrl ç›¸ä½è¾“å‡ºå»¶è¿Ÿ (stateâ†’phase_out)
 
-    // cossin IQºÏ³ÉÑÓ³Ù
-    parameter int COSSIN_DELAY = 6;       // IQ ºÏ³ÉÄ£¿éÁ÷Ë®ÏßÑÓ³Ù
+    // cossin IQåˆæˆå»¶è¿Ÿ
+    parameter int COSSIN_DELAY = 6;       // IQ åˆæˆæ¨¡å—æµæ°´çº¿å»¶è¿Ÿ
 
-    // wideout ¹Ø±ÕÑÓ³Ù (validout ÏÂ½µºó±£³ÖµÄÊ±ÖÓÖÜÆÚÊı)
-    // Ä¬ÈÏ 40, ×î´ó²»³¬¹ı 100
+    // wideout å…³é—­å»¶è¿Ÿ (validout ä¸‹é™åä¿æŒçš„æ—¶é’Ÿå‘¨æœŸæ•°)
+    // é»˜è®¤ 40, æœ€å¤§ä¸è¶…è¿‡ 100
     parameter int WIDEOUT_DLY = 40;
 
-    // -------- FSK / PSK ²ÎÊı --------
-    parameter int FSK_PHASESTEP_NUM = 8;   // FSK ÆµÂÊ±íµãÊı
-    parameter int PSK_CODE_WIDTH = 128;     // PSK ±àÂëÎ»¿í
+    // -------- FSK / PSK å‚æ•° --------
+    parameter int FSK_PHASESTEP_NUM = 8;   // FSK é¢‘ç‡è¡¨ç‚¹æ•°
+    parameter int PSK_CODE_WIDTH = 128;     // PSK ç¼–ç ä½å®½
 
-    // -------- µ÷ÖÆÄ£Ê½±àÂë --------
-    // 8-bit = [7:6] ´óÀà  [5:3] ×ÓÀàĞÍ  [2:0] ²ÎÊı
-    localparam [7:0] MODE_CW         = 8'd1;   // µ¥µãÆµ
-    localparam [7:0] MODE_LFM        = 8'd2;   // ÏßĞÔµ÷Æµ
-    localparam [7:0] MODE_NLFM_COS   = 8'd4;   // ÓàÏÒµ÷Æµ
-    localparam [7:0] MODE_NLFM_ATAN  = 8'd5;   // ·´ÕıÇĞµ÷Æµ
-    localparam [7:0] MODE_FSK        = 8'd9;   // ÆµÒÆ¼ü¿Ø
-    localparam [7:0] MODE_BPSK       = 8'd17;  // ¶şÏà¼ü¿Ø
-    localparam [7:0] MODE_QPSK      = 8'd18;  // ËÄÏà¼ü¿Ø
-    localparam [7:0] MODE_8PSK      = 8'd19;  // °ËÏà¼ü¿Ø
-    localparam [7:0] MODE_FSK_BPSK  = 8'd25;  // ÆµÒÆ+¶şÏàµş¼Ó
-    localparam [7:0] MODE_FSK_QPSK  = 8'd26;  // ÆµÒÆ+ËÄÏàµş¼Ó
+    // -------- è°ƒåˆ¶æ¨¡å¼ç¼–ç  --------
+    // 8-bit = [7:6] å¤§ç±»  [5:3] å­ç±»å‹  [2:0] å‚æ•°
+    localparam [7:0] MODE_CW         = 8'd1;   // å•ç‚¹é¢‘
+    localparam [7:0] MODE_LFM        = 8'd2;   // çº¿æ€§è°ƒé¢‘
+    localparam [7:0] MODE_NLFM_COS   = 8'd4;   // ä½™å¼¦è°ƒé¢‘
+    localparam [7:0] MODE_NLFM_ATAN  = 8'd5;   // åæ­£åˆ‡è°ƒé¢‘
+    localparam [7:0] MODE_FSK        = 8'd9;   // é¢‘ç§»é”®æ§
+    localparam [7:0] MODE_BPSK       = 8'd17;  // äºŒç›¸é”®æ§
+    localparam [7:0] MODE_QPSK      = 8'd18;  // å››ç›¸é”®æ§
+    localparam [7:0] MODE_8PSK      = 8'd19;  // å…«ç›¸é”®æ§
+    localparam [7:0] MODE_FSK_BPSK  = 8'd25;  // é¢‘ç§»+äºŒç›¸å åŠ 
+    localparam [7:0] MODE_FSK_QPSK  = 8'd26;  // é¢‘ç§»+å››ç›¸å åŠ 
 
-    // -------- ×´Ì¬»ú×´Ì¬ --------
-    // 2-bit ±àÂë: 0=IDLE, 1=LOAD, 2=RUN, 3=STOP
+    // -------- çŠ¶æ€æœºçŠ¶æ€ --------
+    // 2-bit ç¼–ç : 0=IDLE, 1=LOAD, 2=RUN, 3=STOP
     typedef enum logic [1:0] {
         ST_IDLE  = 2'd0,
         ST_LOAD  = 2'd1,
@@ -82,44 +81,44 @@ package pkg;
     } state_t;
 
     // ============================================================
-    // ¼ÆËã³£Á¿
+    // è®¡ç®—å¸¸é‡
     // ============================================================
 
-    // Q1.29 ÖĞ -1.0 µÄ¶¨µã±íÊ¾£¨ÓÃÓÚ sweep_phase ³õÖµ£©
+    // Q1.29 ä¸­ -1.0 çš„å®šç‚¹è¡¨ç¤ºï¼ˆç”¨äº sweep_phase åˆå€¼ï¼‰
     localparam logic signed [PHASE_WIDTH-1:0] SWEEP_PHASE_INIT =
         30'sh2000_0000;  // -1.0 in Q1.29 = {1'b1, 29'b0}
 
-    // PSK ÏàÎ»Ó³Éä±í (Q1.29, »¡¶È/¦Ğ ¡Á 2^29)
-    // Ë÷Òı: 0=0, 1=¦Ğ/4, 2=¦Ğ/2, 3=3¦Ğ/4, 4=¦Ğ, 5=5¦Ğ/4, 6=3¦Ğ/2, 7=7¦Ğ/4
+    // PSK ç›¸ä½æ˜ å°„è¡¨ (Q1.29, å¼§åº¦/Ï€ Ã— 2^29)
+    // ç´¢å¼•: 0=0, 1=Ï€/4, 2=Ï€/2, 3=3Ï€/4, 4=Ï€, 5=5Ï€/4, 6=3Ï€/2, 7=7Ï€/4
     localparam logic signed [PHASE_WIDTH-1:0] PSK_PHASE_MAP [0:7] = '{
         30'sd0,              // 0          = 0
-        30'sd134217728,      // ¦Ğ/4       = 0.25 ¡Á 2^29
-        30'sd268435456,      // ¦Ğ/2       = 0.5  ¡Á 2^29
-        30'sd402653184,      // 3¦Ğ/4      = 0.75 ¡Á 2^29
-        30'sd536870912,      // ¦Ğ         = 1.0  ¡Á 2^29
-        30'sd671088640,      // 5¦Ğ/4      = 1.25 ¡Á 2^29
-        30'sd805306368,      // 3¦Ğ/2      = 1.5  ¡Á 2^29
-        30'sd939524096       // 7¦Ğ/4      = 1.75 ¡Á 2^29
+        30'sd134217728,      // Ï€/4       = 0.25 Ã— 2^29
+        30'sd268435456,      // Ï€/2       = 0.5  Ã— 2^29
+        30'sd402653184,      // 3Ï€/4      = 0.75 Ã— 2^29
+        30'sd536870912,      // Ï€         = 1.0  Ã— 2^29
+        30'sd671088640,      // 5Ï€/4      = 1.25 Ã— 2^29
+        30'sd805306368,      // 3Ï€/2      = 1.5  Ã— 2^29
+        30'sd939524096       // 7Ï€/4      = 1.75 Ã— 2^29
     };
 
     // ============================================================
-    // µ÷ÖÆ²ÎÊı½á¹¹Ìå
-    // 8-bit µ÷ÖÆÄ£Ê½±àÂë: [7:6]´óÀà [5:3]×ÓÀàĞÍ [2:0]²ÎÊı
+    // è°ƒåˆ¶å‚æ•°ç»“æ„ä½“
+    // 8-bit è°ƒåˆ¶æ¨¡å¼ç¼–ç : [7:6]å¤§ç±» [5:3]å­ç±»å‹ [2:0]å‚æ•°
     // ============================================================
     typedef struct packed {
-        logic [7:0]       mode;                  // [7:0]              µ÷ÖÆÄ£Ê½±àÂë
-        logic             lfm_dir;               // [8]                LFM ·½Ïò: 0=ÉÏĞĞ, 1=ÏÂĞĞ
-        logic [PWWIDTH-1:0] pw;                 // [8+PWWIDTH-1:9]    Âö¿í(clkÖÜÆÚ), 0=Á¬Ğø²¨
+        logic [7:0]       mode;                  // [7:0]              è°ƒåˆ¶æ¨¡å¼ç¼–ç 
+        logic             lfm_dir;               // [8]                LFM æ–¹å‘: 0=ä¸Šè¡Œ, 1=ä¸‹è¡Œ
+        logic [PWWIDTH-1:0] pw;                 // [8+PWWIDTH-1:9]    é‡‡æ ·ç‚¹æ•°(IQ å¤æ•°æ ·æœ¬å¯¹æ•°), 0=è¿ç»­æ³¢
         logic signed [PHASE_WIDTH-1:0] phasestep_start; // [8+PWWIDTH+30-1:8+PWWIDTH]
         logic signed [PHASE_WIDTH-1:0] phasestep_stop;  //
         logic signed [SWP_WIDTH-1:0]  swpphase;         //
-        logic [PWWIDTH-1:0] psk_sym_width;    // PSK ÂëÔª¿í¶È(clkÖÜÆÚ)
-        logic [6:0]      psk_sym_num;          // PSK ÂëÔª¸öÊı(1~96)
-        logic [PWWIDTH-1:0] fsk_sym_width;    // FSK ÂëÔª¿í¶È(clkÖÜÆÚ)
-        logic [2:0]      fsk_phasestep_num;    // FSK ÆµÂÊ¸öÊı(1~8, 3-bit)
+        logic [PWWIDTH-1:0] psk_sym_width;    // PSK ç å…ƒå®½åº¦(clkå‘¨æœŸ)
+        logic [6:0]      psk_sym_num;          // PSK ç å…ƒä¸ªæ•°(1~96)
+        logic [PWWIDTH-1:0] fsk_sym_width;    // FSK ç å…ƒå®½åº¦(clkå‘¨æœŸ)
+        logic [2:0]      fsk_phasestep_num;    // FSK é¢‘ç‡ä¸ªæ•°(1~8, 3-bit)
         logic signed [FSK_PHASESTEP_NUM-1:0][PHASE_WIDTH-1:0] fsk_phasestep_set;
-                                            // FSK ÆµÂÊ¼¯(8¡Á30-bit, Q1.29)
-        logic [PSK_CODE_WIDTH-1:0] psk_code;   // PSK ±àÂëĞòÁĞ(96-bit)
+                                            // FSK é¢‘ç‡é›†(8Ã—30-bit, Q1.29)
+        logic [PSK_CODE_WIDTH-1:0] psk_code;   // PSK ç¼–ç åºåˆ—(96-bit)
     } mod_param_t;
 
     localparam int MOD_PARAM_WIDTH = $bits(mod_param_t);
