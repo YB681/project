@@ -20,21 +20,28 @@
 //   - nlcmd:   直接接收 state（无延迟），RUN 时自行累加 sweep_phase
 //   - phase_ctrl: 接收延迟 NLCMD_TOTAL_DELAY 的 state，确保收到时 phasestep 已就绪
 //
-// 【脉宽精度增强】
-//   脉宽 mod_param.pw 以"采样点数(IQ 复数样本对数)"为单位，而非整拍。
-//   每时钟周期最多输出 NPAR=8 个样本对(8 通道并行)：
-//     - pw = N  → 精确输出 N 个 IQ 样本对
-//     - N 恰为 8 的整数倍 → 输出 N/8 个整拍，每拍 8 通道
-//     - N 非 8 的整数倍   → 最后一拍仅输出 (N mod 8) 个通道(部分通道截断)
-//     - pw = 0  → 连续波，不自动停止，需外部 stop 信号
-//   （原设计 pw 以整拍为单位，每拍固定输出 8 个样本对；现改为按样本对
-//     精确控制，脉宽分辨率从 8 样本对提升到 1 样本对。）
+// 【脉宽精度增强：样本序号边界控制】
+//   脉宽 mod_param.pw + mod_param.pw_off 共同把脉冲的"起点"与"终点"
+//   都精确对齐到单个样本对(IQ 复数样本对数)，不再受限于 8 边界(整拍)。
+//
+//   每个时钟周期并行输出 NPAR=8 个相位连续的样本对(8 通道)。
+//   以本脉冲第一拍第一个样本的相对序号为 0，本拍样本序号为
+//   samp_idx + k (k=0..7)。脉冲的有效样本相对区间为：
+//       [ pw_off , pw_off + pw )
+//   其中:
+//     - pw_off = mod_param.pw_off  : 起始样本偏移(0..NPAR-1), 使脉冲起点
+//              可落在拍内任意样本位置(左截断/延迟启动), 不再锁 8 边界
+//     - pw     = mod_param.pw      : 脉冲有效长度(采样点数)
+//     - pw=0                       : 连续波, 不自动停止, 需外部 stop
+//
+//   每拍判定掩码:  hit[k] = (pw_off <= samp_idx+k) && (samp_idx+k < pw_off+pw)
+//   由此"起始拍"和"终止拍"都能部分通道截断，脉冲的起点、终点都精确到 1 样本对。
 //
 // 实现要点:
-//   pw_cnt 递减计数器保存剩余样本对数，RUN 时每拍递减 NPAR。
-//   当 pw_cnt <= NPAR 时为本拍最后一拍，置 pw_done 请求状态机转 STOP。
-//   通道掩码由 pw_cnt 生成，并经与 validout 等长的延迟链(约26级)
-//   对齐到输出端，实现最后一拍部分通道精确截断、不错位。
+//   samp_idx 记本拍第一个样本的相对序号(LOAD=0, RUN 每拍 +NPAR)。
+//   当 samp_idx >= pw_off+pw 时本拍起已无有效样本, 置 pw_done 请求状态机转 STOP。
+//   通道掩码由样本序号判定, 并经与 validout 等长的延迟链(约26级)
+//   对齐到输出端, 实现起止部分通道精确截断、不错位。
 //
 // 输出格式:
 //   sigout[channel][I/Q][bit]
@@ -47,7 +54,7 @@ module siggen_intra (
     input  logic                          sclr,
     input  logic                          start,
     input  logic                          stop,
-    input  pkg::mod_param_t               mod_param,   // pw = 采样点数(IQ 样本对数)
+    input  pkg::mod_param_t               mod_param,   // pw=采样点数, pw_off=起始样本偏移
     // IQ 输出: [channel][I=0/Q=1][bit]
     output logic signed [pkg::NPAR-1:0][1:0][pkg::OUT_WIDTH-1:0] sigout,
     output logic                          validout,
@@ -62,29 +69,33 @@ module siggen_intra (
     // =========================================================
     pkg::state_t state_raw, state_next;
 
-    // --- 精确脉宽计数器 + 自动停止 ---
-    //   保存"剩余采样点数(IQ 样本对数)"
-    //   LOAD 时加载 mod_param.pw, RUN 时每拍递减 NPAR
-    //   当 pw_cnt <= NPAR 时为本拍最后一拍, 置 pw_done
+        // --- 样本序号边界控制 + 自动停止 ---
+    //   pw_cnt : 本拍第一个样本在本脉冲内的相对序号 (LOAD=0, RUN 每拍 +NPAR)
+    //   samp_end: 脉冲有效样本区间终点 = pw_off + pw
+    //   当 pw_cnt >= samp_end 时本拍起已无有效样本, 置 pw_done 请求结束
     //   pw=0 → 连续波, pw_done 始终为 0
-    logic [pkg::LIMIT_WIDTH-1:0] pw_cnt;
+    localparam int PW_OFF_W = $clog2(pkg::NPAR);   // pw_off 位宽(=3)
+
+    logic [pkg::PWWIDTH:0] pw_cnt;      // 本拍第一个样本相对序号 (PWWIDTH+1 位防溢出)
+    logic [pkg::PWWIDTH:0] samp_end;    // 有效样本区间终点 = pw_off + pw
     logic pw_done;
+
+    assign samp_end = {1'b0, mod_param.pw_off} + {1'b0, mod_param.pw};  // 终点 = 偏移 + 长度
 
     always_ff @(posedge clk) begin
         if (sclr) begin
             pw_cnt  <= '0;
             pw_done <= 1'b0;
         end else if (state_raw == pkg::ST_LOAD) begin
-            pw_cnt  <= mod_param.pw;     // 加载采样点数(IQ 样本对数)
+            pw_cnt  <= '0;                // 起始样本序号从 0 开始
             pw_done <= 1'b0;
         end else if (state_raw == pkg::ST_RUN) begin
             if (mod_param.pw == '0) begin
-                pw_done <= 1'b0;        // 连续波模式
-            end else if (pw_cnt <= pkg::NPAR) begin
-                pw_cnt  <= '0;          // 最后一拍(剩余 <= NPAR)
-                pw_done <= 1'b1;        // 请求状态机结束
+                pw_done <= 1'b0;          // 连续波模式, 不结束
+            end else if (pw_cnt >= samp_end) begin
+                pw_done <= 1'b1;          // 本拍起已无有效样本 → 结束
             end else begin
-                pw_cnt  <= pw_cnt - pkg::NPAR;  // 输出一整拍(8 通道)
+                pw_cnt  <= pw_cnt + pkg::NPAR;   // 本拍输出 8 个样本, 序号推进
                 pw_done <= 1'b0;
             end
         end
@@ -144,23 +155,21 @@ module siggen_intra (
     //   才能与对应的数据帧同步，避免最后部分通道错位/漏帧。
     // =========================================================
 
-    // 当前拍应输出的通道数 = min(NPAR, pw_cnt)
-    logic [($clog2(pkg::NPAR+1))-1:0] pw_out_n;
-    assign pw_out_n = (pw_cnt >= pkg::NPAR) ?
-                      ($clog2(pkg::NPAR+1))'(pkg::NPAR) :
-                      ($clog2(pkg::NPAR+1))'(pw_cnt);
-
-    // 每拍有效通道掩码（通道 0..pw_out_n-1 有效）
+        // 每拍有效通道掩码（样本序号边界判定）
+    //   本拍样本序号 = pw_cnt + i (i=0..NPAR-1)
+    //   有效条件: pw_off <= pw_cnt+i < samp_end
+    //   → 起始拍(左截断)与终止拍(右截断)都能部分通道, 起止对齐到 1 样本对
     //   pw=0(连续波) → 全通道有效
-    //   RUN 且 pw_cnt!=0 → 前 pw_out_n 个通道有效
+    //   RUN 且 pw_cnt < samp_end → 按样本序号判定
     //   其他 → 全 0
     logic [pkg::NPAR-1:0] pw_mask_raw;
     always_comb begin
         if (mod_param.pw == '0) begin
             pw_mask_raw = '1;                          // 连续波: 全通道有效
-        end else if (state_raw == pkg::ST_RUN && pw_cnt != 0) begin
+        end else if (state_raw == pkg::ST_RUN && pw_cnt < samp_end) begin
             for (int i = 0; i < pkg::NPAR; i++)
-                pw_mask_raw[i] = (i < pw_out_n) ? 1'b1 : 1'b0;
+                pw_mask_raw[i] = ((pw_cnt + i) >= $unsigned(mod_param.pw_off)) &&
+                                 ((pw_cnt + i) < samp_end) ? 1'b1 : 1'b0;
         end else begin
             pw_mask_raw = '0;
         end

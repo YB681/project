@@ -106,9 +106,10 @@ package pkg;
     // 8-bit 调制模式编码: [7:6]大类 [5:3]子类型 [2:0]参数
     // ============================================================
     typedef struct packed {
-        logic [7:0]       mode;                  // [7:0]              调制模式编码
+                logic [7:0]       mode;                  // [7:0]              调制模式编码
         logic             lfm_dir;               // [8]                LFM 方向: 0=上行, 1=下行
-        logic [PWWIDTH-1:0] pw;                 // [8+PWWIDTH-1:9]    采样点数(IQ 复数样本对数), 0=连续波
+        logic [$clog2(NPAR)-1:0] pw_off;        // 起始样本偏移(0..NPAR-1), 使脉冲起点可对齐到任意样本
+        logic [PWWIDTH-1:0] pw;                 // 采样点数(IQ 复数样本对数), 0=连续波
         logic signed [PHASE_WIDTH-1:0] phasestep_start; // [8+PWWIDTH+30-1:8+PWWIDTH]
         logic signed [PHASE_WIDTH-1:0] phasestep_stop;  //
         logic signed [SWP_WIDTH-1:0]  swpphase;         //
